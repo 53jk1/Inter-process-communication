@@ -5,9 +5,9 @@
 
 #include "calc.h"
 
-// Ponowna delkaracja dwóch funkcji, w razie gdyby MinGW Platform SDK w danej wersji ich nie posiadał.
+// Re-declaration of two functions, in case MinGW Platform SDK does not have them in a given version.
 
-// https://msdn.microsoft.com/en-us/library/windows/desktopaa365440.aspx
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365440.aspx
 BOOL WINAPI GetNamedPipeClientProcessId(
     HANDLE Pipe,
     PULONG ClientProcessId
@@ -20,7 +20,7 @@ BOOL WINAPI GetNamedPipeClientSessionId(
 );
 
 HANDLE WaitForNewClient(void) {
-    // Stwórz nowy potok (dwukierunkowy dostęp, tryb pakietowy).
+    // Create a new pipeline (bidirectional access, packet mode).
     HANDLE h = CreateNamedPipe(
         CALCSERVER_PIPE,
         PIPE_ACCESS_DUPLEX,
@@ -36,13 +36,13 @@ HANDLE WaitForNewClient(void) {
         return INVALID_HANDLE_VALUE;
     }
 
-    // Poczekaj na połączenie z drugiej strony potoku.
+    // Wait for a connection from the other side of the pipe.
     BOOL result = ConnectNamedPipe(h, NULL);
     if (result == TRUE) {
         return h;
     }
 
-    // W powyższym przypadku ma miejscec sytuacja wyścigu, tj. klient może się podłączyć do potoku pomiędzy wywołaniem funkcji CreateNamedPipe a ConnectNamedPipe. W takim wypadku GetLastError zwróci wartość ERROR_PIPE_CONNECTED.
+    // In the above case, a race condition occurs, ie the client can connect to the pipe between CreateNamedPipe and ConnectNamedPipe. In this case, GetLastError will return ERROR_PIPE_CONNECTED.
     if (GetLastError() == ERROR_PIPE_CONNECTED) {
         return h;
     }
@@ -53,7 +53,7 @@ HANDLE WaitForNewClient(void) {
 }
 
 calc_request *GetCalcRequest(HANDLE h, size_t *item_count) {
-    // Zablokuj wykonanie aż do otrzymania danych.
+    // Block execution until data is received.
     DWORD bytes_read;
     BOOL result = ReadFile(h, NULL, 0, &bytes_read, NULL);
     if (!result) {
@@ -61,11 +61,11 @@ calc_request *GetCalcRequest(HANDLE h, size_t *item_count) {
         return NULL;
     }
 
-    // Sprawdź wielkośc dostępnych danych.
+    // Check the amount of data available.
     DWORD bytes_avail;
     result = PeekNamedPipe(h, NULL, 0, NULL, &bytes_avail, NULL);
 
-    // Przykładowa detekcja błędów związanych z pakietem.
+    // Sample package-related error detection.
     if (bytes_avail < sizeof(calc_request)) {
         printf("protocol error (packet too small)\n");
         return NULL;
@@ -76,7 +76,7 @@ calc_request *GetCalcRequest(HANDLE h, size_t *item_count) {
         return NULL;
     }
 
-    // Zaalokuj pamięć na strukturę, a następnie odbierz wiadomość.
+    // Allocate memory to structure then receive message.
     calc_request *creq = malloc(bytes_avail);
     ReadFile(h, creq, bytes_avail, &bytes_read, NULL);
 
@@ -138,22 +138,22 @@ int SendCalcResponse(HANDLE h, calc_response *cresp) {
 }
 
 int main(void) {
-    // Jednowątkowy serwer pseudo-kalkulatora, obsługujący jdnego klienta naraz.
+    // Single-threaded pseudo-calculator server serving one client at a time.
 
     for(;;) {
-        // Stwórz potok i poczekaj na połączenie.
+        // Create a pipe and wait for connection.
         HANDLE h = WaitForNewClient();
         if (h == INVALID_HANDLE_VALUE) {
             continue;
         }
 
-        // Wypisz informacje o kliencie.
+        // List customer information.
         ULONG pid, sid;
         GetNamedPipeClientProcessId(h, &pid);
         GetNamedPipeClientSessionId(h, &sid);
         printf("info: client connected! (pid=%u, sid=%u)\n", (unsigned int)pid, (unsigned int)sid);
 
-        // Odbierz żądanie.
+        // Receive the request.
         size_t item_count = 0;
         calc_request *creq = GetCalcRequest(h, &item_count);
         if (creq == NULL) {
@@ -161,7 +161,7 @@ int main(void) {
             continue;
         }
 
-        // Wylicz wynik.
+        // Calculate the result.
         unsigned int value = 0;
         calc_response cresp;
         memset(&cresp, 0, sizeof(cresp));
@@ -174,7 +174,7 @@ int main(void) {
         printf("info: result for the client is %u\n", value);
         free(creq);
 
-        // Odeślij wynik i rozłącz klienta.
+        // Send the result back and disconnect the client.
         SendCalcResponse(h, &cresp);
         DisconnectNamedPipe(h);
         CloseHandle(h);
