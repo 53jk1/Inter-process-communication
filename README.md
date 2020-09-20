@@ -14,6 +14,7 @@ Testing the application set requires opening two consoles and running the server
 
 <h1>Unix domain sockets and socketpair</h1>
 Compilation and an example run is as follows.
+
 ```
 $ gcc -Wall -Wextra socketpair.c -o socketpair
 $ ./socketpair
