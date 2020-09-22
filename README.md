@@ -21,3 +21,20 @@ $ ./socketpair
 ```
 
 <hr>
+
+<h1>Shared memory (Windows OS)</h1>
+Using two terminals, you can compile and test the operation of both programs:
+
+<b>Terminal 1:</b>
+```
+> gcc -std=c99 -Wall -Wextra hellosharedmemory.c -o hello
+> hello
+```
+
+<b>Terminal 2:</b>
+```
+> accesschk -t section -o \Sessions\1\BaseNamedObjects\HelloWorld
+> gcc -std=c99 -Wall -Wextra dumpsection.c -o dumpsection
+> dumpsection Local\HelloWorld
+> type Local_HelloWorld.bin
+```
