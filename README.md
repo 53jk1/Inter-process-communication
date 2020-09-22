@@ -1,3 +1,5 @@
+<hr>
+
 <h1>calculator</h1>
 
 ```
@@ -38,3 +40,5 @@ Using two terminals, you can compile and test the operation of both programs:
 > dumpsection Local\HelloWorld
 > type Local_HelloWorld.bin
 ```
+
+<hr>
