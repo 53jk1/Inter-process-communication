@@ -42,3 +42,12 @@ Using two terminals, you can compile and test the operation of both programs:
 ```
 
 <hr>
+
+<h1>Messages in WinAPI (C++)</h1>
+
+Compilation and run are shown below.
+
+```
+> g++ msgtest.cc -Wall -Wextra -o msgtest
+> msgtest
+```
