@@ -51,3 +51,6 @@ Compilation and run are shown below.
 > g++ msgtest.cc -Wall -Wextra -o msgtest
 > msgtest
 ```
+Generally, the main use of messages is communication between GUI windows.
+
+<hr>
