@@ -1,6 +1,6 @@
 <hr>
 
-<h1>calculator</h1>
+<h1>Calculator</h1>
 
 ```
 > gcc calc_client.c -Wall -Wextra -o calc_client.exe
